@@ -7,26 +7,30 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.commands.ManualCommandDrive;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.command.Subsystem;
+import frc.robot.Constants;
+import frc.robot.commands.DriveManualCommand;
+import frc.robot.util.Xbox;
 
-public class SubsystemDrive extends SubsystemBase {
-  
-  private CANSparkMax
-    leftMaster,
-    leftSlave,
-    rightMaster,
-    rightSlave;
-    
+public class SubsystemDrive extends Subsystem {
+  /**
+   * Creates a new ExampleSubsystem.
+   */
+
+  private final CANSparkMax neoDriver;
+
   public SubsystemDrive() {
-    leftMaster = new CANSparkMax(0, CANSparkMaxLowLevel.MotorType.kBrushless);
-    leftSlave = new CANSparkMax(1, CANSparkMaxLowLevel.MotorType.kBrushless);
-    rightMaster = new CANSparkMax(2, CANSparkMaxLowLevel.MotorType.kBrushless);
-    rightSlave = new CANSparkMax(3, CANSparkMaxLowLevel.MotorType.kBrushless);
-    super.setDefaultCommand(new ManualCommandDrive());
+    this.neoDriver = new CANSparkMax(Constants.DRIVE_MASTER_ID, MotorType.kBrushless);
+  }
+
+  @Override
+  public void initDefaultCommand() {
+    setDefaultCommand(new DriveManualCommand());
   }
 
   @Override
@@ -34,10 +38,8 @@ public class SubsystemDrive extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
-  public void setMotors(double left, double right) {
-    leftMaster.set(left);
-    leftSlave.set(left);
-    rightMaster.set(right);    
-    rightSlave.set(right);
+  public void drive(Joystick joystick) {
+    double throttle = Xbox.RT(joystick) - Xbox.LT(joystick);
+    this.neoDriver.set((throttle < -1 ? -1 : (throttle > 1 ? 1 : throttle)));
   }
 }
